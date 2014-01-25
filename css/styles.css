@@ -1,7 +1,3 @@
-.hidden{
-  display:none;
-}
-
 body{
   margin-bottom: 80px;
 }
@@ -26,38 +22,11 @@ body{
 }*/
 
 .jumbotron{
-    background-image: url(../img/facepaper.jpg);
-    background-position: 50% 50%;
+    /*background-image: url(../img/warty-final-ubuntu);*/
+    background-position: 50% 100%;
     background-size: cover;
     background-repeat: no-repeat;
     /*color: white;*/
-}
-
-.friendpick{
-  position:absolute;
-  z-index: 1;
-  overflow: scroll;
-  height: 1000px;
-  width: 600px;
-  background-color: green;
-}
-
-#target video.me.master{
-  height: 960px;
-  width: 540px;
-}
-#target video.you.master{
-  height: 960px;
-  width: 540px;
-}
-
-#target video.me.slave{
-  height: 300px;
-  width: 300px;
-}
-#target video.you.slave{
-  height: 300px;
-  width: 300px;
 }
 
 h3 a.title-link{
