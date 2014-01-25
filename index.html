@@ -23,29 +23,38 @@
 						var id = room + '-' + data.streamId
 						var isMaster = userId == data.src;
 						console.log('start song', id, data, 'src', isMaster);
-						connection = new RTCMultiConnection();
+						connection = new RTCMultiConnection(id);
 						connection.disableDtlsSrtp = true;
 						connection.autoCloseEntireSession = true;
-						connection.session = {
-							audio: isMaster,
-							video: false,
-							oneway: true,
-						};
-						connection.direction = 'one-to-many';
 
 						connection.onstream = function(e) {
+							console.log('stream added', e);
 							$("#target").empty().append(e.mediaElement);
 						};
 
 						if (isMaster) {
-							connection.open(id);
-						} else
-							connection.connect(id);
+							connection.session = {
+								audio: true,
+								video: true,
+								oneway: true,
+							};
+							connection.direction = 'one-to-many';
+							connection.open();
+						} else {
+							if (0) connection.onNewSession = function(e){
+								e.session = {
+									video: true,
+								};
+							};
+							connection.connect();
+						}
 					});
 				});
 				socket.on('stop song', function(data){ // show data?
-					if (connection)
+					if (connection) {
 						connection.leave();
+						connection = null;
+					}
 				});
 			}
 			if(location.hash) {
