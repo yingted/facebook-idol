@@ -29,6 +29,10 @@ body{
     /*color: white;*/
 }
 
+.friendsbar{
+  overflow: scroll;
+  height:400px;
+}
 h3 a.title-link{
   text-decoration: none;
   color: inherit;
