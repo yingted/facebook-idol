@@ -406,7 +406,7 @@ function list(ids,idsarray) {
     for(var i=0; i<response.result.items.length; i++) {
       var item = response.result.items[i];
       var id = idsarray[i];
-      $('#search-results').append($("<div></div>").html(item.snippet.title+"<br/><a href='javascript:void(0);' onclick='window.startSong(\""+id.id.videoId+"\");'><img src="+item.snippet.thumbnails.default.url+"></img></a><br/>"+item.snippet.publishedAt.replace(/T.*Z/,'')+" "+item.contentDetails.duration.replace('PT','').replace('M',':').replace('S','')+" "+item.statistics.viewCount+" views"));
+      $('#search-results').append($("<div></div>").html(item.snippet.title+"<br/><a href='javascript:void(0);' onclick='window.startSong(\""+id.id.videoId+"\");'><img height="80" width="60" src="+item.snippet.thumbnails.default.url+"></img></a><br/>"+item.snippet.publishedAt.replace(/T.*Z/,'')+" "+item.contentDetails.duration.replace('PT','').replace('M',':').replace('S','')+" "+item.statistics.viewCount+" views"));
     }
   });
 }
