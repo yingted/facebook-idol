@@ -283,10 +283,12 @@ SELECT uid,name,online_presence FROM user WHERE \n\
     }, callback);
   console.log(window.location.href);
   
-  // FB.ui({
-  //   method: 'send',
-  //   link: "http://caffeine.csclub.uwaterloo.ca:8000/#" + window.location.href.substring(window.location.href.length-3, window.location.href.length),
-  // });
+  console.log("sendUIDs", sendUIDs);
+  FB.ui({
+    method: 'send',
+    to: sendUIDs,
+    link: "http://caffeine.csclub.uwaterloo.ca:8000/#" + window.location.href.substring(window.location.href.length-3, window.location.href.length),
+  });
   }
 
   function callback(response) {
