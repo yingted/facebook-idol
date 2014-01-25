@@ -5,7 +5,6 @@ var app = require('http').createServer(handler)
 
 var mapping = {
   '/': '/index.html',
-  '/io.js': '/node_modules/socket.io/node_modules/socket.io-client/lib/io.js',
 };
 
 function handler (req, res) {
