@@ -14,30 +14,13 @@
 			function rand(){
 				return Math.random()*Math.pow(2,53);
 			};
-			var SMALL_DEVIATION = .5;
-			var LARGE_DEVIATION = 3.;
 			// Init socketio
 			var socket = io.connect(location.protocol + "//" + location.hostname + ":" + (location.port || "80"));
 			var connection = null;
-			var isMaster;
 			var userId = 'user-' + rand();
 			var api = {
-				heartbeat: function(time) {
-					time += .050; // approximately
-					if (ytplayer.getPlayerState() != 1) {
-						ytplayer.seekTo(time, true);
-						ytplayer.playVideo();
-					} else {
-						var delta = Math.abs(ytplayer.getCurrentTime() - time);
-						if (delta > SMALL_DEVIATION) {
-							console.log("correcting skew", delta);
-							ytplayer.seekTo(time, delta > LARGE_DEVIATION);
-						}
-					}
-				},
-				pause: function(time) {
-					ytplayer.pauseVideo();
-					ytplayer.seekTo(time, true);
+				heartbeat: function(heartbeat) {
+					console.log('heartbeat', heartbeat, 'at', Date.now());
 				},
 			};
 			skipRTCMultiConnectionLogs = true;
@@ -60,7 +43,7 @@
 					up = down = 0;
 					$(function(){
 						var id = room + '-' + data.streamId
-						isMaster = userId == data.src;
+						var isMaster = userId == data.src;
 						$("body").removeClass("self-master self-slave").addClass("self-" + (isMaster ? "master" : "slave"));
 						console.log('start song', id, data, 'src', isMaster);
 						connection = new RTCMultiConnection(id);
@@ -141,6 +124,26 @@
 					join(room);
 				});
 			}
+			$(function(){
+				var heartbeat = null;
+				[
+					function(){ // move decl of heartbeat to nearest enclosing function
+						heartbeat = setInterval(function(){ // move to the video loop
+							connection.sendCustomMessage(['heartbeat', Date.now()]);
+						}, 1000);
+					},
+					function(){
+						if (heartbeat !== null) {
+							clearInterval(heartbeat);
+							heartbeat = null;
+						}
+					},
+				].map(function(f){
+					$("#main")
+						.append($("<button>").text(f.toString()).click(f))
+						.append("<br>");
+				});
+			});
 			
 		// })();
   window.fbAsyncInit = function() {
@@ -397,24 +400,12 @@ function list(ids,idsarray) {
   });
 }
 
-var heartbeat = null;
+
+
 function fnEnded(value){
-	if (isMaster) {
-		if (value == 1) {
-			heartbeat = setInterval(function(){ // move to the video loop
-				connection.sendCustomMessage(['heartbeat', ytplayer.getCurrentTime()]);
-			}, 1000);
-		} else {
-			connection.sendCustomMessage(['pause', ytplayer.getCurrentTime()]);
-			if (heartbeat !== null) {
-				clearInterval(heartbeat);
-				heartbeat = null;
-			}
-		}
-	}
-	if (value===0) {
-		socket.emit('stop song');
-	}
+  if (value===0) {
+    socket.emit('stop song');
+  }
 }
 </script>
 </head>
@@ -514,7 +505,7 @@ function fnEnded(value){
       width: 50%;
       overflow: scroll;
       height: 400px;
-      font-size: 12pt;
+      font-size: 16pt;
       color: black;
     }
     .breathingroom{
@@ -549,9 +540,9 @@ function fnEnded(value){
 			height:100%;
 		}
 		.login .player-container{
-			position:absolute;
-			left:-99999px;
-			top:-99999px;
+		    position:absolute;
+		    left:-99999px;
+		    top:-99999px;
 		}
 	</style>
   <div class = "breathingroom"></div>
