@@ -33,6 +33,25 @@ body{
   overflow: scroll;
   height:400px;
 }
+
+#target video.me.master{
+  height: 960px;
+  width: 540px;
+}
+#target video.you.master{
+  height: 960px;
+  width: 540px;
+}
+
+#target video.me.slave{
+  height: 300px;
+  width: 300px;
+}
+#target video.you.slave{
+  height: 300px;
+  width: 300px;
+}
+
 h3 a.title-link{
   text-decoration: none;
   color: inherit;
