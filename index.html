@@ -196,6 +196,7 @@
   }
 
   function sendRequest() {
+  console.log("window location: " + window.location);
   // Get the list of selected friends
   var sendUIDs = '';
   var mfsForm = document.getElementById('mfsForm');
@@ -209,7 +210,9 @@
   FB.ui({method: 'apprequests',
    to: sendUIDs,
    title: 'My Great Invite',
-   message: 'Check out this Awesome App! [#link to app]',
+
+   message: 'copy&paste this URL: ' + window.location,
+   redirect_uri: window.location,
     }, callback);
   }
 
