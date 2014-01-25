@@ -5,7 +5,6 @@
 	<title></title>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<script src="http://www.rtcmulticonnection.org/latest.js"></script>
-	<script src="/io.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
 		(function(){
@@ -13,8 +12,9 @@
 				return Math.random()*Math.pow(2,53);
 			};
 			// Init socketio
-			var socket = io.connect("http://localhost:8000");
+			var socket = io.connect(location.protocol + "//" + location.hostname + ":" + (location.port || "80"));
 			var userId = 'user-' + rand();
+			skipRTCMultiConnectionLogs = true;
 			function join(room){
 				var connection = null;
 				socket.on('start song', function(data){ // client
@@ -25,38 +25,24 @@
 						connection = new RTCMultiConnection(id);
 						connection.disableDtlsSrtp = true;
 						connection.autoCloseEntireSession = true;
-
+						connection.extra = {userId: userId};
 						connection.onstream = function(e) {
 							console.log('stream added', e);
-							$("#target").append(e.mediaElement);
+							$(e.mediaElement)
+								.addClass(e.extra.userId == userId ? "me" : "you")
+								.addClass(e.extra.userId == data.src ? "master" : "slave")
+								.appendTo("#target");
 						};
 
 						if (isMaster) {
 							connection.session = {
 								audio: true,
-								video: true,
-								oneway: true,
+								video: data.video,
 							};
 							connection.open();
 						} else {
 							console.log('client connecting');
 							var sessions = { };
-							connection.onNewSession = function(session) {
-								// if room is not transmitted once;
-								// "onNewSession" will be called multiple times for same session;
-								// we need to store session-id in an object.
-								if (sessions[session.sessionid]) return;
-								sessions[session.sessionid] = session;
-							
-								// you can call "captureUserMedia" to attach a custom stream even if session is oneway!
-								connection.captureUserMedia(function() {
-									// it is mandatory; otherwise; RTCMultiConnection will remove video stream
-									connection.dontAttachStream = true;
-							
-									// "join" method must be invoked in the stream-callback
-									connection.join(session);
-								}, { video: true });
-							};
 							connection.connect();
 						}
 					});
@@ -83,7 +69,10 @@
 			$(function(){
 				[
 					function(){
-						socket.emit('start song', {streamId: 'sid-' + rand(), src: userId});
+						socket.emit('start song', {streamId: 'sid-' + rand(), src: userId, video: true});
+					},
+					function(){
+						socket.emit('start song', {streamId: 'sid-' + rand(), src: userId, video: false});
 					},
 					function(){
 						socket.emit('vote', {good: true, src: userId});
