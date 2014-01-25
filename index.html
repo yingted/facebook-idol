@@ -132,6 +132,26 @@
   // for any authentication related change, such as login, logout or session refresh. This means that
   // whenever someone who was previously logged out tries to log in again, the correct case below 
   // will be handled. 
+  console.log("logout remove");
+  FB.getLoginStatus(function(response) {
+    console.log("log rem");
+    if (response.status === 'connected') {
+      // the user is logged in and has authenticated your
+      // app, and response.authResponse supplies
+      // the user's ID, a valid access token, a signed
+      // request, and the time the access token 
+      // and signed request each expire
+      var uid = response.authResponse.userID;
+      var accessToken = response.authResponse.accessToken;
+    } else if (response.status === 'not_authorized') {
+      $("button#logout-button").hide();
+      // the user is logged in to Facebook, 
+      // but has not authenticated your app
+    } else {
+      $("button#logout-button").hide();
+      // the user isn't logged in to Facebook.
+    }
+   });
   FB.Event.subscribe('auth.authResponseChange', function(response) {
     // Here we specify what we do with the response anytime this event occurs. 
     if (response.status === 'connected')
@@ -347,6 +367,8 @@ function list(ids,idsarray) {
     }
   });
 }
+
+
 
 function fnEnded(value){
   if (value===0) {
