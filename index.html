@@ -37,7 +37,7 @@
 				});
 				socket.on('start song', function(data){ // client
 					$("<div class='player'>")
-						.append($("#myytapi"))
+						.append($("#myytplayer"))
 						.appendTo($(".main").empty())
 						.wrap("<div class='video-container player-container'>"); // and show video
 					$("#upvote").text("Upvote");
