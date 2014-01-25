@@ -33,9 +33,13 @@ body{
     /*color: white;*/
 }
 
-.friendsbar{
+.friendpick{
+  position:absolute;
+  z-index: 1;
   overflow: scroll;
-  height:400px;
+  height: 1000px;
+  width: 600px;
+  background-color: red;
 }
 
 #target video.me.master{

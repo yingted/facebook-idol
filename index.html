@@ -25,14 +25,24 @@
 			};
 			skipRTCMultiConnectionLogs = true;
 			function join(room){
-window.startSong =    function startSong(id){
-      socket.emit('start song', {streamId: id, src: userId, video: true});
-    }
+				window.startSong =    function startSong(id){
+					socket.emit('start song', {streamId: id, src: userId, video: true});
+				}
+				var up = 0, down = 0;
+				socket.on('vote', function(data){
+					if (data.good)
+						$("#upvote").text("Upvote ("+ ++up +")");
+					else
+						$("#downvote").text("Downvote ("+ ++down +")");
+				});
 				socket.on('start song', function(data){ // client
 					$("<div class='player'>")
 						.append($("#ytapiplayer").removeClass('hidden'))
 						.appendTo($(".main").empty())
 						.wrap("<div class='video-container player-container'>"); // and show video
+					$("#upvote").text("Upvote");
+					$("#downvote").text("Downvote");
+					up = down = 0;
 					$(function(){
 						var id = room + '-' + data.streamId
 						var isMaster = userId == data.src;
@@ -189,32 +199,39 @@ window.startSong =    function startSong(id){
     );
   }
   function renderMFS() {
-  // First get the list of friends for this user with the Graph API
-  FB.api('/me/friends', function(response) {
-   console.log(response); 
-   var container = document.getElementById('mfs');
-   console.log(container);
-   var mfsForm = document.createElement('form');
-   mfsForm.id = 'mfsForm';
+    // var query = 'SELECT uid,name,online_presence FROM user WHERE online_presence = 'active' AND uid IN ( SELECT uid2 FROM friend where uid1 = me() ) ORDER BY rand() LIMIT 20';
+    FB.api("/fql?q=" + encodeURIComponent("\
+SELECT uid,name,online_presence FROM user WHERE \n\
+  online_presence IN ('active', 'idle') \n\
+  AND uid IN ( \n\
+    SELECT uid2 FROM friend where uid1 = me() \n\
+  ) ORDER BY rand() LIMIT 200"), function(response) {
+      console.log("FQL response", response);
+      var modalcontainer = document.getElementById('fmodal');
+      var container = document.getElementById('mfs');
+      console.log(container);
+      var mfsForm = document.createElement('form');
+      mfsForm.id = 'mfsForm';
 
-   // Iterate through the array of friends object and create a checkbox for each one.
-   for(var i = 0; i < Math.min(response.data.length, 1000); i++) {
-     var friendItem = document.createElement('div');
-     friendItem.id = 'friend_' + response.data[i].id;
-     friendItem.innerHTML = '<input type="checkbox" name="friends" value="'
-       + response.data[i].id
-       + '" />' + response.data[i].name;
-       mfsForm.appendChild(friendItem);
-     }
-     container.appendChild(mfsForm);
+      // Iterate through the array of friends object and create a checkbox for each one.
+      console.log("response", response);
+      for(var i = 0; i < Math.min(response.data.length, 1000); i++) {
+       var friendItem = document.createElement('div');
 
-     // Create a button to send the Request(s)
-     var sendButton = document.createElement('input');
-     sendButton.type = 'button';
-     sendButton.value = 'Send Request';
-     sendButton.onclick = sendRequest;
-     mfsForm.appendChild(sendButton);
-   });
+       friendItem.id = 'friend_' + response.data[i].uid;
+       friendItem.innerHTML = '<input type="checkbox" name="friends" value="'
+         + response.data[i].uid
+         + '" />' + response.data[i].name;
+         mfsForm.appendChild(friendItem);
+       }
+       // Create a button to send the Request(s)
+       var sendButton = document.createElement('input');
+       sendButton.type = 'button';
+       sendButton.value = 'Send Request';
+       sendButton.onclick = sendRequest;
+       modalcontainer.appendChild(sendButton);
+       container.appendChild(mfsForm);
+    });
   }
 
   function sendRequest() {
@@ -227,7 +244,16 @@ window.startSong =    function startSong(id){
        sendUIDs += mfsForm.friends[i].value + ',';
      }
    }
+  console.log("mfsForm", mfsForm);
+  console.log("sendUIDs", sendUIDs);
+  console.log('');
 
+  removeModal();
+  function removeModal(){
+    var cn = document.getElementById('fmodal');
+    console.log("delete cn " + cn);
+    cn.parentNode.removeChild(cn);
+  }
   // Use FB.ui to send the Request(s)
   FB.ui({method: 'apprequests',
    to: sendUIDs,
@@ -240,12 +266,10 @@ window.startSong =    function startSong(id){
 
   function callback(response) {
     if (!response || response.error) {
-      alert('Error occured');
-      console.log(response);
+      console.log("fail", response);
     }else {
-          alert('Action was successful! Action ID: ' + response.id)
-          console.log(response);
-      }
+      console.log(response);
+    }
   }
 
   $(document).ready(function(){
@@ -255,7 +279,15 @@ window.startSong =    function startSong(id){
       });
     });
     $("#inviteFriends").bind('click', function(){
+      FB.login(function(response) {
       renderMFS();
+ }, {scope: 'publish_actions,user_friends,friends_online_presence,user_online_presence,basic_info,public_profile'});
+    });
+    $("#close-modal").bind('click', function(){
+      var cn = document.getElementById('fmodal');
+      console.log("delete cn " + cn);
+      cn.parentNode.removeChild(cn);
+      $(".breathingroom").remove();
     });
 
     $("#startSong").bind('click', function(){
@@ -264,10 +296,10 @@ window.startSong =    function startSong(id){
     $("#startSongBlind").bind('click', function(){
       socket.emit('start song', {streamId: 'sid-' + rand(), src: userId, video: false});
     });
-    $("#upVote").bind('click', function(){
+    $("#upvote").bind('click', function(){
       socket.emit('vote', {good: true, src: userId});
     });
-    $("#downVote").bind('click', function(){
+    $("#downvote").bind('click', function(){
       socket.emit('vote', {good: false, src: userId});
     });
   });
@@ -439,7 +471,35 @@ function fnEnded(value){
 		video.slave{
 			height:100%;
 		}
+    #fmodal{
+      width:100%;
+      height:90%;
+      border-radius:2em;
+      padding:1em;
+      position: absolute;
+      background-color: #4e4eff;
+      z-index: 2;
+    }
+    .friendpick{
+      width: 50%;
+      overflow: scroll;
+      height: 400px;
+      font-size: 12pt;
+      color: black;
+    }
+    .breathingroom{
+      height: 5%;
+      z-index: 2;
+    }
 	</style>
+  <div class = "breathingroom"></div>
+  <div id = "fmodal">
+    
+    <h1>Click to invite your online friends!</h1>
+    <button type="button" class="btn btn-default" id="close-modal" scope="publish_actions">X</button>
+    <button type="button" class="btn btn-default" id="inviteFriends" scope="publish_actions">Invite Friends</button>
+    <div class = "friendpick" id = "mfs"></div>
+  </div>
 	<div class="sidebar-container">
 		<div class="sidebar">
 			<form onSubmit="search();return false;"><input id="query" value='We are the champions' type="text"/></form>
@@ -457,7 +517,7 @@ function fnEnded(value){
 			<button href="#" type="button" class="btn btn-default" id="upvote">Upvote</button>
 			<button href="#" type="button" class="btn btn-default" id="downvote">Downvote</button>
 			<button type="button" class="btn btn-default" id="logout-button">LOGOUT</button>
-			<button type="button" class="btn btn-default" id="inviteFriends" scope="publish_actions">Invite Friends</button>
+			
 			<br>
 			<fb:login-button show-faces="true" width="200" max-rows="1" scope="publish_actions"></fb:login-button>
 			<p class="list-group-item-text" id="mfs"></p>
