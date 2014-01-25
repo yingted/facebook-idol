@@ -13,6 +13,7 @@
 			function rand(){
 				return Math.random()*Math.pow(2,53);
 			};
+			// Init socketio
 			var socket = io.connect("http://localhost:8000");
 			var userId = 'user-' + rand();
 			function join(room){
@@ -61,10 +62,28 @@
 					$("<button>").text(f.toString()).click(f).appendTo($("body"));
 				});
 			});
+			// Init facebook API
+			window.fbAsyncInit = function() {
+				FB.init({
+					appId : '725325364157893',
+					status: true,
+					xfbml : true
+				});
+			};
+
+			(function(d, s, id){
+				 var js, fjs = d.getElementsByTagName(s)[0];
+				 if (d.getElementById(id)) {return;}
+				 js = d.createElement(s); js.id = id;
+				 js.src = "//connect.facebook.net/en_US/all.js";
+				 fjs.parentNode.insertBefore(js, fjs);
+			 }(document, 'script', 'facebook-jssdk'));
 		})();
+
 	</script>
 </head>
 <body>
+	<div id="fb-root"></div>
 	<div id="target"></div>
 </body>
 </html>
