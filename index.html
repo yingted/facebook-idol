@@ -319,6 +319,7 @@
 			padding:2em;
 			padding-right:23em;
 			padding-bottom:11em;
+			position:relative;
 		}
 		.sidebar{
 			width:100%;
@@ -334,6 +335,7 @@
 			border-radius:2em;
 			padding:1em;
 			position:relative;
+			padding-right:5em;
 		}
 		#target{
 			width:100%;
@@ -386,6 +388,22 @@
 			bottom:0;
 			border-bottom:1px solid black;
 		}
+		.voting{
+			visibility:hidden;
+			position:absolute;
+			width:24em;
+			padding-right:24em;
+			padding-top:3em;
+			height:5em;
+			right:0;
+			top:0;
+		}
+		.voting button{
+			float:right;
+		}
+		.self-master .voting,.self-slave .voting{
+			visibility:visible;
+		}
 	</style>
 	<div class="sidebar-container">
 		<div class="sidebar">
@@ -397,13 +415,15 @@
 			<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.</p>
 			<button href="#" type="button" class="btn btn-default" id="startSong">Start Song</button>
 			<!--<button href="#" type="button" class="btn btn-default" id="startSongBlind">Start Song Blind</button>-->
-			<button href="#" type="button" class="btn btn-default" id="upvote">Upvote</button>
-			<button href="#" type="button" class="btn btn-default" id="downvote">Downvote</button>
 			<button type="button" class="btn btn-default" id="logout-button">LOGOUT</button>
 			<button type="button" class="btn btn-default" id="inviteFriends" scope="publish_actions">Invite Friends</button>
 			<br>
 			<fb:login-button show-faces="true" width="200" max-rows="1" scope="publish_actions"></fb:login-button>
 			<p class="list-group-item-text" id="mfs"></p>
+		</div>
+		<div class="voting">
+			<button href="#" type="button" class="btn btn-default" id="upvote">Upvote</button>
+			<button href="#" type="button" class="btn btn-default" id="downvote">Downvote</button>
 		</div>
 		<div id="target">
 		</div>
