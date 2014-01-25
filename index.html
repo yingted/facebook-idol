@@ -1,95 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>Facebook Idol</title>
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-	<script src="http://www.rtcmulticonnection.org/latest.js"></script>
-	<script src="/socket.io/socket.io.js"></script>
-	<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
-	<link href="css/styles.css" rel="stylesheet">
-	<script>
-		(function(){
-			function rand(){
-				return Math.random()*Math.pow(2,53);
-			};
-			// Init socketio
-			var socket = io.connect(location.protocol + "//" + location.hostname + ":" + (location.port || "80"));
-			var userId = 'user-' + rand();
-			skipRTCMultiConnectionLogs = true;
-			function join(room){
-				var connection = null;
-				socket.on('start song', function(data){ // client
-					$(function(){
-						var id = room + '-' + data.streamId
-						var isMaster = userId == data.src;
-						console.log('start song', id, data, 'src', isMaster);
-						connection = new RTCMultiConnection(id);
-						connection.disableDtlsSrtp = true;
-						connection.autoCloseEntireSession = true;
-						connection.extra = {userId: userId};
-						connection.onstream = function(e) {
-							console.log('stream added', e);
-							$(e.mediaElement)
-								.addClass(e.extra.userId == userId ? "me" : "you")
-								.addClass(e.extra.userId == data.src ? "master" : "slave")
-								.appendTo("#target");
-						};
+  <meta charset="UTF-8">
+  <title>Facebook Idol</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script src="http://www.rtcmulticonnection.org/latest.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/styles.css" rel="stylesheet">
+  <script>
+  var socket = io.connect(location.protocol + "//" + location.hostname + ":" + (location.port || "80")); // moved this
+    // (function(){
+      function rand(){
+        return Math.random()*Math.pow(2,53);
+      };
+      // Init socketio
+      // var socket used to be here
+      var userId = 'user-' + rand();
+      skipRTCMultiConnectionLogs = true;
+      function join(room){
+        var connection = null;
+        socket.on('start song', function(data){ // client
+          $(function(){
+            var id = room + '-' + data.streamId
+            var isMaster = userId == data.src;
+            console.log('start song', id, data, 'src', isMaster);
+            connection = new RTCMultiConnection(id);
+            connection.disableDtlsSrtp = true;
+            connection.autoCloseEntireSession = true;
+            connection.extra = {userId: userId};
+            connection.onstream = function(e) {
+              console.log('stream added', e);
+              $(e.mediaElement)
+                .addClass(e.extra.userId == userId ? "me" : "you")
+                .addClass(e.extra.userId == data.src ? "master" : "slave")
+                .appendTo("#target");
+            };
 
-						if (isMaster) {
-							connection.session = {
-								audio: true,
-								video: data.video,
-							};
-							connection.open();
-						} else {
-							console.log('client connecting');
-							var sessions = { };
-							connection.connect();
-						}
-					});
-				});
-				socket.on('stop song', function(data){ // show data?
-					$("#target").empty();
-					if (connection) {
-						connection.leave();
-						connection = null;
-					}
-				});
-			}
-			if(location.hash) {
-				var room = location.hash.substring(1);
-				socket.emit('join room', room);
-				join(room);
-			} else {
-				socket.emit('new room');
-				socket.on('new room', function (room) {
-					location.replace('#' + room);
-					join(room);
-				});
-			}
-			$(function(){
-				[
-					function(){
-						socket.emit('start song', {streamId: 'sid-' + rand(), src: userId, video: true});
-					},
-					function(){
-						socket.emit('start song', {streamId: 'sid-' + rand(), src: userId, video: false});
-					},
-					function(){
-						socket.emit('vote', {good: true, src: userId});
-					},
-					function(){
-						socket.emit('vote', {good: false, src: userId});
-					},
-				].map(function(f){
-					$("body")
-						.append($("<button>").text(f.toString()).click(f))
-						.append("<br>");
-				});
-			});
-			
-		})();
+            if (isMaster) {
+              connection.session = {
+                audio: true,
+                video: data.video,
+              };
+              connection.open();
+            } else {
+              console.log('client connecting');
+              var sessions = { };
+              connection.connect();
+            }
+          });
+        });
+        socket.on('stop song', function(data){ // show data?
+          $("#target").empty();
+          if (connection) {
+            connection.leave();
+            connection = null;
+          }
+        });
+      }
+      if(location.hash) {
+        var room = location.hash.substring(1);
+        socket.emit('join room', room);
+        join(room);
+      } else {
+        socket.emit('new room');
+        socket.on('new room', function (room) {
+          location.replace('#' + room);
+          join(room);
+        });
+      }
+      
+    //})();
+
   window.fbAsyncInit = function() {
   FB.init({
     appId      : '201019110094783',
@@ -178,7 +160,7 @@
    mfsForm.id = 'mfsForm';
 
    // Iterate through the array of friends object and create a checkbox for each one.
-   for(var i = 0; i < Math.min(response.data.length, 1000); i++) {
+   for(var i = 0; i < Math.min(response.data.length, 1000); i++) { // only goes up to 1000 friends
      var friendItem = document.createElement('div');
      friendItem.id = 'friend_' + response.data[i].id;
      friendItem.innerHTML = '<input type="checkbox" name="friends" value="'
@@ -237,39 +219,54 @@
     $("#inviteFriends").bind('click', function(){
       renderMFS();
     });
+
+    $("#startSong").bind('click', function(){
+      socket.emit('start song', {streamId: 'sid-' + rand(), src: userId, video: true});
+    });
+    $("#endSong").bind('click', function(){
+      socket.emit('start song', {streamId: 'sid-' + rand(), src: userId, video: false});
+    });
+    $("#upVote").bind('click', function(){
+      socket.emit('vote', {good: true, src: userId});
+    });
+    $("#downVote").bind('click', function(){
+      socket.emit('vote', {good: false, src: userId});
+    });
   });
-	</script>
+  </script>
 </head>
 <body>
 <div class = "container">
-	<div class = "jumbotron">
-		<div class = "text-center">
-			<h1>Facebook Idol</h1>
-		</div>
-	</div>
+  <div class = "jumbotron">
+    <div class = "text-center">
+      <h1>Facebook Idol</h1>
+    </div>
+  </div>
 </div>
 <div id="fb-root"></div>
 <div id="target"></div>
 <div class = "container">
-	<div class = "row">
-		<div class = "col-md-9">
-			<fb:login-button show-faces="true" width="200" max-rows="1" scope="publish_actions"></fb:login-button>
-		</div>
-	</div>
-	<div class = "row">
-		<div class = "col-md-9">
-			<button type = "button" class = "btn btn-default" id = "logout-button">LOGOUT</button>
-			<button type = "button" class = "btn btn-default" id = "inviteFriends" scope="publish_actions">Invite Friends</button>
-		</div>
-		<div class = "col-lg-3 friendsbar" style="overflow:scroll; height:400px;" id = "friendsbar">
-	    <div class = "list-group">
-	      <a href = "#" class = "list-group-item active">
-	        <h4 class = "list-group-item-heading">Lorem ipsum</h4>
-	        <p class = "list-group-item-text" id = "mfs"></p>
-	      </a>
-	    </div>
-	  </div>
-	</div>
+  <div class = "row">
+    <div class = "col-md-9">
+      <fb:login-button show-faces="true" width="200" max-rows="1" scope="publish_actions"></fb:login-button>
+      <button type = "button" class = "btn btn-default" id = "logout-button">LOGOUT</button>
+    </div>
+  </div>
+  <div class = "row">
+    <div class = "col-md-9">
+      <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.</p>
+      <button href = "#" type = "button" class = "btn btn-default" id = "startSong">Starts Song</button>
+      <button href = "#" type = "button" class = "btn btn-default" id = "endSong">End Song</button>
+      <button href = "#" type = "button" class = "btn btn-default" id = "upvote">Upvote</button>
+      <button href = "#" type = "button" class = "btn btn-default" id = "downvote">Downvote</button>
+    </div>
+    <div class = "col-lg-3 friendsbar" style="overflow:scroll; height:400px;" id = "friendsbar">
+      <div class = "list-group">
+          <button type = "button" class = "btn btn-default" id = "inviteFriends" scope="publish_actions">Invite Friends</button>
+          <p class = "list-group-item-text" id = "mfs"></p>
+      </div>
+    </div>
+  </div>
 </div>
 
 </body>
