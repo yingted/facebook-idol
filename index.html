@@ -29,7 +29,7 @@
 
 						connection.onstream = function(e) {
 							console.log('stream added', e);
-							$("#target").empty().append(e.mediaElement);
+							$("#target").append(e.mediaElement);
 						};
 
 						if (isMaster) {
@@ -38,19 +38,32 @@
 								video: true,
 								oneway: true,
 							};
-							connection.direction = 'one-to-many';
 							connection.open();
 						} else {
-							if (0) connection.onNewSession = function(e){
-								e.session = {
-									video: true,
-								};
+							console.log('client connecting');
+							var sessions = { };
+							connection.onNewSession = function(session) {
+								// if room is not transmitted once;
+								// "onNewSession" will be called multiple times for same session;
+								// we need to store session-id in an object.
+								if (sessions[session.sessionid]) return;
+								sessions[session.sessionid] = session;
+							
+								// you can call "captureUserMedia" to attach a custom stream even if session is oneway!
+								connection.captureUserMedia(function() {
+									// it is mandatory; otherwise; RTCMultiConnection will remove video stream
+									connection.dontAttachStream = true;
+							
+									// "join" method must be invoked in the stream-callback
+									connection.join(session);
+								}, { video: true });
 							};
 							connection.connect();
 						}
 					});
 				});
 				socket.on('stop song', function(data){ // show data?
+					$("#target").empty();
 					if (connection) {
 						connection.leave();
 						connection = null;
