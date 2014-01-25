@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="/io.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="/webrtc.io.js"></script>
+	<script>
+		var socket = io.connect("http://localhost:8000");
+		socket.on('news', function (data) {
+			console.log(data);
+			socket.emit('my other event', { my: 'data' });
+		});
+		$(function(){
+			rtc.connect('ws://localhost:8001','test');
+			rtc.createStream('remote');
+			rtc.on('add remote stream', function(stream){
+				console.log('remote');
+			});
+		});
+	</script>
+</head>
+<body>
+	<audio id="remote" autoplay></audio>
+</body>
+</html>
