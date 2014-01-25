@@ -150,9 +150,9 @@
     FB.api('/me', function(response) {
       console.log('Good to see you, ' + response.name + '.');
     });
-    FB.api('/me/feed', 'post', {message: 'Hello, world!'}, function(response) {
-      callback(response);
-    });
+    // FB.api('/me/feed', 'post', {message: 'Hello, world!'}, function(response) {
+    //   callback(response);
+    // });
   }
 
   function viewFriends(){
