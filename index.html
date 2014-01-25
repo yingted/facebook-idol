@@ -114,7 +114,7 @@
 					try{
 						ytplayer.stopVideo();
 					}catch(e){}//may not be needed
-          $(".video-container:not(.player-container)").remove();
+					$(".video-container:not(.player-container),canvas.spectrum").remove();
 				});
 			}
 			if(location.hash) {
@@ -290,11 +290,11 @@ SELECT uid,name,online_presence FROM user WHERE \n\
   console.log(window.location.href);
   
   console.log("sendUIDs", sendUIDs);
-  FB.ui({
-    method: 'send',
-    to: sendUIDs,
-    link: "http://caffeine.csclub.uwaterloo.ca:8000/#" + window.location.href.substring(window.location.href.length-3, window.location.href.length),
-  });
+  // FB.ui({
+  //   method: 'send',
+  //   to: sendUIDs,
+  //   link: "http://caffeine.csclub.uwaterloo.ca:8000/#" + window.location.href.substring(window.location.href.length-3, window.location.href.length),
+  // });
   }
 
   function callback(response) {
@@ -537,7 +537,7 @@ function fnEnded(value){
       position: absolute;
       /* background-color: #4e4eff; */
       /*background-image:url('http://www.mobilemag.com/wp-content/uploads/2013/05/apple-wallpaper-logo.jpg');*/
-      background-image:url('img/bg.png');
+      background-image:url('img/bg.jpg');
       z-index: 2; 
     }
     .friendpick{
