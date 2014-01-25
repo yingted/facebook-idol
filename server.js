@@ -39,12 +39,13 @@ io.sockets.on('connection', function (socket) {
   function join (room) {
     socket.join(room);
     var curSong = room + '-' + randomRoom(); // trash
-    var state = 'stopped';
+    var state = 'stopped', veto = 0;
     function stop(){
       console.log('client stopped', curSong);
     }
     socket.on('start song', function(data) {
       curSong = room + '-' + data.streamId;
+      veto = 0;
       console.log('client started', curSong);
       if (state == 'started')
         io.sockets.in(room).emit('stop song');
@@ -60,6 +61,8 @@ io.sockets.on('connection', function (socket) {
     socket.on('vote', function(data) {
       console.log('song', curSong, 'vote', data.good);
       io.sockets.in(room).emit('vote', data);
+      if ((veto += !data.good) >= 10)
+        io.sockets.in(room).emit('stop song');
     });
   }
 });
