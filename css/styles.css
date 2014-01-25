@@ -1,0 +1,35 @@
+body{
+  margin-bottom: 80px;
+}
+
+.page-header{
+  margin-top: 0;
+}
+
+.panel-body{
+  padding-top: 0;
+}
+
+.featuredImg{
+  margin-bottom: 15px;
+}
+
+/*.description{
+  font-size: small;
+  margin-left: 10px;
+  margin-right: 10px;
+  color: grey;
+}*/
+
+.jumbotron{
+    background-image: url(../img/facepaper.jpg);
+    background-position: 50% 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    /*color: white;*/
+}
+
+h3 a.title-link{
+  text-decoration: none;
+  color: inherit;
+}
