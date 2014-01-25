@@ -46,6 +46,34 @@
 							$video.appendTo($video.hasClass("master") ? $(".main") : "#target")
 								.wrap("<div class='video-container'>");
 							e.mediaElement.play();
+							if ($video.hasClass("master")){ // also, chrome doesn't like remote streams
+								var ac = new (window.webkitAudioContext || window.AudioContext);
+								var analyser = ac.createAnalyser();
+								var source = ac.createMediaStreamSource(e.stream);
+								var node = ac.createJavaScriptNode(1024, 1, 1);
+								analyser.smoothingTimeConstant = 0.2;
+								analyser.fftSize = 512;
+								source.connect(analyser);
+								analyser.connect(node);
+								node.connect(ac.destination);
+								var cvs = $("<canvas class='spectrum'>").appendTo(".main")[0];
+								cvs.width = 512;
+								cvs.height = 255;
+								var ctx = cvs.getContext("2d");
+								node.onaudioprocess = function(){
+									var a = new Uint8Array(analyser.frequencyBinCount);
+									analyser.getByteFrequencyData(a);
+									ctx.clearRect(0, 0, cvs.width, cvs.height);
+									for(var i=0;i<a.length;++i){
+										var f=i*44100/analyser.fftSize;
+										var v=Ra*a[i];
+										var Ra=12200*12200*f*f*f*f/(f*f+20.6*20.6)/(f*f+12200*12200)/Math.sqrt((f*f+107.7*107.7)*(f*f+737.9*737.9));
+										ctx.fillStyle="rgba("+Math.round(255-i*255/a.length)+",255,"+Math.round(i*255/a.length)+","+v/255+")";
+										var part=v*cvs.height/255;
+										ctx.fillRect(i*cvs.width/a.length,cvs.height-part,1*cvs.width/a.length,part);
+									}
+								};
+							}
 						};
 						connection.onCustomMessage = function(message) {
 							return api[message[0]].apply(this, message.slice(1));
@@ -352,6 +380,13 @@
 		}
 		video.slave{
 			height:100%;
+		}
+		canvas.spectrum{
+			z-index:1;
+			position:absolute;
+			left:0;
+			bottom:0;
+			border:1px solid black;
 		}
 	</style>
 	<div class="sidebar-container">
