@@ -97,28 +97,163 @@
 						.append("<br>");
 				});
 			});
-			// Init facebook API
-			window.fbAsyncInit = function() {
-				FB.init({
-					appId : '725325364157893',
-					status: true,
-					xfbml : true
-				});
-			};
-
-			(function(d, s, id){
-				 var js, fjs = d.getElementsByTagName(s)[0];
-				 if (d.getElementById(id)) {return;}
-				 js = d.createElement(s); js.id = id;
-				 js.src = "//connect.facebook.net/en_US/all.js";
-				 fjs.parentNode.insertBefore(js, fjs);
-			 }(document, 'script', 'facebook-jssdk'));
+			
 		})();
+  window.fbAsyncInit = function() {
+  FB.init({
+    appId      : '201019110094783',
+    status     : true, // check login status
+    cookie     : true, // enable cookies to allow the server to access the session
+    xfbml      : true  // parse XFBML
+  });
 
+  // Here we subscribe to the auth.authResponseChange JavaScript event. This event is fired
+  // for any authentication related change, such as login, logout or session refresh. This means that
+  // whenever someone who was previously logged out tries to log in again, the correct case below 
+  // will be handled. 
+  FB.Event.subscribe('auth.authResponseChange', function(response) {
+    // Here we specify what we do with the response anytime this event occurs. 
+    if (response.status === 'connected') {
+      console.log("1");
+      // The response object is returned with a status field that lets the app know the current
+      // login status of the person. In this case, we're handling the situation where they 
+      // have logged in to the app.
+      testAPI();
+    } else if (response.status === 'not_authorized') {
+      console.log("2");
+      // In this case, the person is logged into Facebook, but not into the app, so we call
+      // FB.login() to prompt them to do so. 
+      // In real-life usage, you wouldn't want to immediately prompt someone to login 
+      // like this, for two reasons:
+      // (1) JavaScript created popup windows are blocked by most browsers unless they 
+      // result from direct interaction from people using the app (such as a mouse click)
+      // (2) it is a bad experience to be continually prompted to login upon page load.
+    } else {
+      console.log("3");
+      // In this case, the person is not logged into Facebook, so we call the login() 
+      // function to prompt them to do so. Note that at this stage there is no indication
+      // of whether they are logged into the app. If they aren't then they'll see the Login
+      // dialog right after they log in to Facebook. 
+      // The same caveats as above apply to the FB.login() call here
+
+      // FB.login(function(){
+      //   console.log("posting to wall");
+      //   FB.api('/me/feed', 'post', {message: 'Hello, world!'});
+      // }, {scope: 'publish_actions'});
+      console.log("4");
+    }
+  });
+  };
+
+  // Load the SDK asynchronously
+  (function(d){
+   var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+   if (d.getElementById(id)) {return;}
+   js = d.createElement('script'); js.id = id; js.async = true;
+   js.src = "//connect.facebook.net/en_US/all.js";
+   ref.parentNode.insertBefore(js, ref);
+  }(document));
+
+  // Here we run a very simple test of the Graph API after login is successful. 
+  // This testAPI() function is only called in those cases. 
+  function testAPI() {
+    console.log('Welcome!  Fetching your information.... ');
+    FB.api('/me', function(response) {
+      console.log('Good to see you, ' + response.name + '.');
+    });
+    FB.api('/me/feed', 'post', {message: 'Hello, world!'}, function(response) {
+      callback(response);
+    });
+  }
+
+  function viewFriends(){
+    /* make the API call */
+    FB.api(
+        "/me/friends",
+        function (response) {
+          if (response && !response.error) {
+            console.log(response);
+          }
+        }
+    );
+  }
+  function renderMFS() {
+  // First get the list of friends for this user with the Graph API
+  FB.api('/me/friends', function(response) {
+   console.log(response); 
+   var container = document.getElementById('mfs');
+   console.log(container);
+   var mfsForm = document.createElement('form');
+   mfsForm.id = 'mfsForm';
+
+   // Iterate through the array of friends object and create a checkbox for each one.
+   for(var i = 0; i < Math.min(response.data.length, 1000); i++) {
+     var friendItem = document.createElement('div');
+     friendItem.id = 'friend_' + response.data[i].id;
+     friendItem.innerHTML = '<input type="checkbox" name="friends" value="'
+       + response.data[i].id
+       + '" />' + response.data[i].name;
+       mfsForm.appendChild(friendItem);
+     }
+     container.appendChild(mfsForm);
+
+     // Create a button to send the Request(s)
+     var sendButton = document.createElement('input');
+     sendButton.type = 'button';
+     sendButton.value = 'Send Request';
+     sendButton.onclick = sendRequest;
+     mfsForm.appendChild(sendButton);
+   });
+  }
+
+  function sendRequest() {
+  // Get the list of selected friends
+  var sendUIDs = '';
+  var mfsForm = document.getElementById('mfsForm');
+   for(var i = 0; i < mfsForm.friends.length; i++) {
+     if(mfsForm.friends[i].checked) {
+       sendUIDs += mfsForm.friends[i].value + ',';
+     }
+   }
+
+  // Use FB.ui to send the Request(s)
+  FB.ui({method: 'apprequests',
+   to: sendUIDs,
+   title: 'My Great Invite',
+   message: 'Check out this Awesome App! [#link to app]',
+    }, callback);
+  }
+
+  function callback(response) {
+    if (!response || response.error) {
+      alert('Error occured');
+      console.log(response);
+    }else {
+          alert('Action was successful! Action ID: ' + response.id)
+          console.log(response);
+      }
+  }
+
+  $(document).ready(function(){
+    $("#logout-button").bind('click', function(){
+      FB.logout(function(response) {
+        // Person is now logged out
+      });
+    });
+    $("#inviteFriends").bind('click', function(){
+      renderMFS();
+    });
+  });
 	</script>
 </head>
 <body>
 	<div id="fb-root"></div>
 	<div id="target"></div>
+
+	
+	<fb:login-button show-faces="true" width="200" max-rows="1" scope="publish_actions"></fb:login-button>
+	<button id = "logout-button">LOGOUT</button>
+	<button id = "inviteFriends" scope="publish_actions">Invite Friends</button>
+	<div id="mfs" style="overflow:scroll; height:400px; width:30%;"></div>
 </body>
 </html>
