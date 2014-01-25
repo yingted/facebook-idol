@@ -111,6 +111,9 @@
 						connection.leave();
 						connection = null;
 					}
+					try{
+						ytplayer.stopVideo();
+					}catch(e){}//may not be needed
 				});
 			}
 			if(location.hash) {
@@ -279,8 +282,14 @@ SELECT uid,name,online_presence FROM user WHERE \n\
    title: 'My Great Invite',
 
    message: 'copy&paste this URL: ' + window.location,
-   redirect_uri: window.location,
+   redirect_uri: window.location.href,
     }, callback);
+  console.log(window.location.href);
+  
+  // FB.ui({
+  //   method: 'send',
+  //   link: "http://caffeine.csclub.uwaterloo.ca:8000/#" + window.location.href.substring(window.location.href.length-3, window.location.href.length),
+  // });
   }
 
   function callback(response) {
@@ -503,7 +512,7 @@ function fnEnded(value){
       width: 40%;
       overflow: scroll;
       height: 400px;
-      font-size: 12pt;
+      font-size: 16pt;
       color: black;
       background-color: #ffffff;
     }
