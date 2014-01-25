@@ -114,7 +114,7 @@
 					try{
 						ytplayer.stopVideo();
 					}catch(e){}//may not be needed
-          $(".video-container:not(.player-container)").remove();
+					$(".video-container:not(.player-container),canvas.spectrum").remove();
 				});
 			}
 			if(location.hash) {
