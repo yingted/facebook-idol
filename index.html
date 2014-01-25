@@ -41,11 +41,38 @@
 							console.log('stream added', e);
 							var $video = $(e.mediaElement)
 								.addClass(e.extra.userId == userId ? "me" : "you")
-								.addClass(e.extra.userId == data.src ? "master" : "slave")
-								.removeAttr("controls");
+								.addClass(e.extra.userId == data.src ? "master" : "slave");
 							$video.appendTo($video.hasClass("master") ? $(".main") : "#target")
 								.wrap("<div class='video-container'>");
 							e.mediaElement.play();
+							if ($video.hasClass("master")){ // also, chrome doesn't like remote streams
+								var ac = new (window.webkitAudioContext || window.AudioContext);
+								var analyser = ac.createAnalyser();
+								var source = ac.createMediaStreamSource(e.stream);
+								var node = ac.createJavaScriptNode(1024, 1, 1);
+								analyser.smoothingTimeConstant = 0.2;
+								analyser.fftSize = 512;
+								source.connect(analyser);
+								analyser.connect(node);
+								node.connect(ac.destination);
+								var cvs = $("<canvas class='spectrum'>").appendTo(".main")[0];
+								cvs.width = 512;
+								cvs.height = 255;
+								var ctx = cvs.getContext("2d");
+								node.onaudioprocess = function(){
+									var a = new Uint8Array(analyser.frequencyBinCount);
+									analyser.getByteFrequencyData(a);
+									ctx.clearRect(0, 0, cvs.width, cvs.height);
+									for(var i=0;i<a.length;++i){
+										var f=i*44100/analyser.fftSize;
+										var v=Ra*a[i];
+										var Ra=12200*12200*f*f*f*f/(f*f+20.6*20.6)/(f*f+12200*12200)/Math.sqrt((f*f+107.7*107.7)*(f*f+737.9*737.9));
+										ctx.fillStyle="rgba("+Math.round(255-i*255/a.length)+",255,"+Math.round(i*255/a.length)+","+v/255+")";
+										var part=v*cvs.height/255;
+										ctx.fillRect(i*cvs.width/a.length,cvs.height-part,1*cvs.width/a.length,part);
+									}
+								};
+							}
 						};
 						connection.onCustomMessage = function(message) {
 							return api[message[0]].apply(this, message.slice(1));
@@ -303,6 +330,7 @@ SELECT uid,name,online_presence FROM user WHERE \n\
 			padding:2em;
 			padding-right:23em;
 			padding-bottom:11em;
+			position:relative;
 		}
 		.sidebar{
 			width:100%;
@@ -318,6 +346,7 @@ SELECT uid,name,online_presence FROM user WHERE \n\
 			border-radius:2em;
 			padding:1em;
 			position:relative;
+			padding-right:5em;
 		}
 		#target{
 			width:100%;
@@ -359,7 +388,6 @@ SELECT uid,name,online_presence FROM user WHERE \n\
 		}
 		.video-container video{
 			display:block;
-			margin:0 auto;
 		}
 		video.slave{
 			height:100%;
@@ -384,6 +412,29 @@ SELECT uid,name,online_presence FROM user WHERE \n\
       height: 5%;
       z-index: 2;
     }
+		canvas.spectrum{
+			z-index:1;
+			position:absolute;
+			left:0;
+			bottom:0;
+			border-bottom:1px solid black;
+		}
+		.voting{
+			visibility:hidden;
+			position:absolute;
+			width:24em;
+			padding-right:24em;
+			padding-top:3em;
+			height:5em;
+			right:0;
+			top:0;
+		}
+		.voting button{
+			float:right;
+		}
+		.self-master .voting,.self-slave .voting{
+			visibility:visible;
+		}
 	</style>
   <div class = "breathingroom"></div>
   <div id = "fmodal">
@@ -401,13 +452,15 @@ SELECT uid,name,online_presence FROM user WHERE \n\
 			<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.</p>
 			<button href="#" type="button" class="btn btn-default" id="startSong">Start Song</button>
 			<!--<button href="#" type="button" class="btn btn-default" id="startSongBlind">Start Song Blind</button>-->
-			<button href="#" type="button" class="btn btn-default" id="upvote">Upvote</button>
-			<button href="#" type="button" class="btn btn-default" id="downvote">Downvote</button>
 			<button type="button" class="btn btn-default" id="logout-button">LOGOUT</button>
 			
 			<br>
 			<fb:login-button show-faces="true" width="200" max-rows="1" scope="publish_actions"></fb:login-button>
 			<p class="list-group-item-text" id="mfs"></p>
+		</div>
+		<div class="voting">
+			<button href="#" type="button" class="btn btn-default" id="upvote">Upvote</button>
+			<button href="#" type="button" class="btn btn-default" id="downvote">Downvote</button>
 		</div>
 		<div id="target">
 		</div>
