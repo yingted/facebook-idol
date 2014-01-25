@@ -41,8 +41,7 @@
 							console.log('stream added', e);
 							var $video = $(e.mediaElement)
 								.addClass(e.extra.userId == userId ? "me" : "you")
-								.addClass(e.extra.userId == data.src ? "master" : "slave")
-								.removeAttr("controls");
+								.addClass(e.extra.userId == data.src ? "master" : "slave");
 							$video.appendTo($video.hasClass("master") ? $(".main") : "#target")
 								.wrap("<div class='video-container'>");
 							e.mediaElement.play();
