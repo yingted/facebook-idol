@@ -24,11 +24,21 @@
 			};
 			skipRTCMultiConnectionLogs = true;
 			function join(room){
+				var up = 0, down = 0;
+				socket.on('vote', function(data){
+					if (data.good)
+						$("#upvote").text("Upvote ("+ ++up +")");
+					else
+						$("#downvote").text("Downvote ("+ ++down +")");
+				});
 				socket.on('start song', function(data){ // client
 					$("<div class='player'>")
 						.text(data.streamId)
 						.appendTo($(".main").empty())
 						.wrap("<div class='video-container player-container'>"); // and show video
+					$("#upvote").text("Upvote");
+					$("#downvote").text("Downvote");
+					up = down = 0;
 					$(function(){
 						var id = room + '-' + data.streamId
 						var isMaster = userId == data.src;
@@ -281,10 +291,10 @@ SELECT uid,name,online_presence FROM user WHERE \n\
     $("#startSongBlind").bind('click', function(){
       socket.emit('start song', {streamId: 'sid-' + rand(), src: userId, video: false});
     });
-    $("#upVote").bind('click', function(){
+    $("#upvote").bind('click', function(){
       socket.emit('vote', {good: true, src: userId});
     });
-    $("#downVote").bind('click', function(){
+    $("#downvote").bind('click', function(){
       socket.emit('vote', {good: false, src: userId});
     });
   });
