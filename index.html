@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<title></title>
+	<title>Facebook Idol</title>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<script src="http://www.rtcmulticonnection.org/latest.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
+	<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/styles.css" rel="stylesheet">
 	<script>
 		(function(){
 			function rand(){
@@ -149,9 +151,9 @@
     FB.api('/me', function(response) {
       console.log('Good to see you, ' + response.name + '.');
     });
-    FB.api('/me/feed', 'post', {message: 'Hello, world!'}, function(response) {
-      callback(response);
-    });
+    // FB.api('/me/feed', 'post', {message: 'Hello, world!'}, function(response) {
+    //   callback(response);
+    // });
   }
 
   function viewFriends(){
@@ -195,6 +197,7 @@
   }
 
   function sendRequest() {
+  console.log("window location: " + window.location);
   // Get the list of selected friends
   var sendUIDs = '';
   var mfsForm = document.getElementById('mfsForm');
@@ -208,7 +211,9 @@
   FB.ui({method: 'apprequests',
    to: sendUIDs,
    title: 'My Great Invite',
-   message: 'Check out this Awesome App! [#link to app]',
+
+   message: 'copy&paste this URL: ' + window.location,
+   redirect_uri: window.location,
     }, callback);
   }
 
@@ -235,13 +240,36 @@
 	</script>
 </head>
 <body>
-	<div id="fb-root"></div>
-	<div id="target"></div>
+<div class = "container">
+	<div class = "jumbotron">
+		<div class = "text-center">
+			<h1>Facebook Idol</h1>
+		</div>
+	</div>
+</div>
+<div id="fb-root"></div>
+<div id="target"></div>
+<div class = "container">
+	<div class = "row">
+		<div class = "col-md-9">
+			<fb:login-button show-faces="true" width="200" max-rows="1" scope="publish_actions"></fb:login-button>
+		</div>
+	</div>
+	<div class = "row">
+		<div class = "col-md-9">
+			<button type = "button" class = "btn btn-default" id = "logout-button">LOGOUT</button>
+			<button type = "button" class = "btn btn-default" id = "inviteFriends" scope="publish_actions">Invite Friends</button>
+		</div>
+		<div class = "col-lg-3">
+	    <div class = "list-group">
+	      <a href = "#" class = "list-group-item active">
+	        <h4 class = "list-group-item-heading">Lorem ipsum</h4>
+	        <p class = "list-group-item-text" id = "mfs"></p>
+	      </a>
+	    </div>
+	  </div>
+	</div>
+</div>
 
-	
-	<fb:login-button show-faces="true" width="200" max-rows="1" scope="publish_actions"></fb:login-button>
-	<button id = "logout-button">LOGOUT</button>
-	<button id = "inviteFriends" scope="publish_actions">Invite Friends</button>
-	<div id="mfs" style="overflow:scroll; height:400px; width:30%;"></div>
 </body>
 </html>
