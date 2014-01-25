@@ -37,7 +37,7 @@
 				});
 				socket.on('start song', function(data){ // client
 					$("<div class='player'>")
-						.append($("#ytapiplayer").removeClass('hidden'))
+						.append($("#myytapi"))
 						.appendTo($(".main").empty())
 						.wrap("<div class='video-container player-container'>"); // and show video
 					$("#upvote").text("Upvote");
@@ -383,7 +383,6 @@ function fnEnded(value){
 </script>
 </head>
 <body>
-	<div id="ytapiplayer" class="hidden">You need Flash player 8+ and JavaScript enabled to view this video.</div>
 	<div id="fb-root"></div>
 	<style>
 		html,body{
@@ -493,6 +492,7 @@ function fnEnded(value){
     }
 	</style>
 	<div class="offscreen">
+		<div id="ytapiplayer" class="hidden">You need Flash player 8+ and JavaScript enabled to view this video.</div>
 		<script>
 			// Init YT API
 			var params = { allowScriptAccess: "always" };
@@ -519,7 +519,7 @@ function fnEnded(value){
 	<div class="main-container">
 		<div class="main">
 			<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.</p>
-			<button href="#" type="button" class="btn btn-default" id="startSong">Start Song</button>
+			<!--<button href="#" type="button" class="btn btn-default" id="startSong">Start Song</button>-->
 			<!--<button href="#" type="button" class="btn btn-default" id="startSongBlind">Start Song Blind</button>-->
 			<button href="#" type="button" class="btn btn-default" id="upvote">Upvote</button>
 			<button href="#" type="button" class="btn btn-default" id="downvote">Downvote</button>
