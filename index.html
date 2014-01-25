@@ -223,6 +223,7 @@
     );
   }
   function renderMFS() {
+    $("#mfs").removeClass("prehidden");
     // var query = 'SELECT uid,name,online_presence FROM user WHERE online_presence = 'active' AND uid IN ( SELECT uid2 FROM friend where uid1 = me() ) ORDER BY rand() LIMIT 20';
     FB.api("/fql?q=" + encodeURIComponent("\
 SELECT uid,name,online_presence FROM user WHERE \n\
@@ -312,7 +313,10 @@ SELECT uid,name,online_presence FROM user WHERE \n\
     });
     $("#inviteFriends").bind('click', function(){
       FB.login(function(response) {
+      if(!response.authResponse)
+        return;
       renderMFS();
+      renderMFS=function(){};
  }, {scope: 'publish_actions,user_friends,friends_online_presence,user_online_presence,basic_info,public_profile'});
     });
     $("#close-modal").bind('click', function(){
@@ -580,14 +584,17 @@ function fnEnded(value){
 		    left:-99999px;
 		    top:-99999px;
 		}
+		#mfs.prehidden{
+			visibility:hidden;
+		}
 	</style>
   <div class = "breathingroom"></div>
   <div id = "fmodal">
     
     <h1>Click to invite your online friends!</h1>
-    <button type="button" class="btn btn-default" id="close-modal" scope="publish_actions">X</button>
     <button type="button" class="btn btn-default" id="inviteFriends" scope="publish_actions">Invite Friends</button>
-    <div class = "friendpick" id = "mfs"></div>
+    <button type="button" class="btn btn-default" id="close-modal" scope="publish_actions">Solo</button>
+    <div class="friendpick prehidden" id="mfs"></div>
   </div>
 	<div class="sidebar-container">
 		<div class="sidebar">
