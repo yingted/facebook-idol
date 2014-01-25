@@ -17,13 +17,15 @@
 			var socket = io.connect("http://localhost:8000");
 			var userId = 'user-' + rand();
 			function join(room){
+				var connection = null;
 				socket.on('start song', function(data){ // client
 					$(function(){
 						var id = room + '-' + data.streamId
-						var isMaster = userId == data.master;
-						console.log('start song', id, data, 'master', isMaster);
-						var connection = new RTCMultiConnection();
+						var isMaster = userId == data.src;
+						console.log('start song', id, data, 'src', isMaster);
+						connection = new RTCMultiConnection();
 						connection.disableDtlsSrtp = true;
+						connection.autoCloseEntireSession = true;
 						connection.session = {
 							audio: isMaster,
 							video: false,
@@ -41,6 +43,10 @@
 							connection.connect(id);
 					});
 				});
+				socket.on('stop song', function(data){ // show data?
+					if (connection)
+						connection.leave();
+				});
 			}
 			if(location.hash) {
 				var room = location.hash.substring(1);
@@ -56,10 +62,18 @@
 			$(function(){
 				[
 					function(){
-						socket.emit('start song', {streamId: 'sid-' + rand(), master: userId});
+						socket.emit('start song', {streamId: 'sid-' + rand(), src: userId});
+					},
+					function(){
+						socket.emit('vote', {good: true, src: userId});
+					},
+					function(){
+						socket.emit('vote', {good: false, src: userId});
 					},
 				].map(function(f){
-					$("<button>").text(f.toString()).click(f).appendTo($("body"));
+					$("body")
+						.append($("<button>").text(f.toString()).click(f))
+						.append("<br>");
 				});
 			});
 			// Init facebook API

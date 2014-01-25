@@ -53,5 +53,9 @@ io.sockets.on('connection', function (socket) {
     socket.on('stop song', function(data) {
       stop();
     });
+    socket.on('vote', function(data) {
+      console.log('song', curSong, 'vote', data.good);
+      io.sockets.in(room).emit('vote', data);
+    });
   }
 });
