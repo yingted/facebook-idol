@@ -26,15 +26,19 @@ app.listen(8000);
 var webRTC = require('webrtc.io').listen(8001);
 function randomRoom(){
   do {
-    for (var room = ''; room.length < 3;)
+    for (var room = ''; room.length < 3;) // possibly increase that
       room += Math.random().toString(36)[2] || '0';
   } while (room in io.sockets.manager.rooms);
   return room;
 }
 
 io.sockets.on('connection', function (socket) {
-  socket.emit('news', { hello: 'world' });
-  socket.on('my other event', function (data) {
-    console.log(data);
+  socket.on('new room', function (){
+    var room = randomRoom();
+    socket.emit('new room', room);
+    socket.join(room);
+  });
+  socket.on('join room', function (room) {
+    socket.join(room);
   });
 });

@@ -8,18 +8,29 @@
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="/webrtc.io.js"></script>
 	<script>
-		var socket = io.connect("http://localhost:8000");
-		socket.on('news', function (data) {
-			console.log(data);
-			socket.emit('my other event', { my: 'data' });
-		});
-		$(function(){
-			rtc.connect('ws://localhost:8001','test');
-			rtc.createStream('remote');
-			rtc.on('add remote stream', function(stream){
-				console.log('remote');
-			});
-		});
+		(function(){
+			var socket = io.connect("http://localhost:8000");
+			function join(room){
+				$(function(){
+					rtc.connect('ws://localhost:8001', room);
+					rtc.createStream('remote');
+					rtc.on('add remote stream', function(stream){
+						console.log('remote');
+					});
+				});
+			}
+			if(location.hash) {
+				var room = location.hash.substring(1);
+				socket.emit('join room', room);
+				join(room);
+			} else {
+				socket.emit('new room');
+				socket.on('new room', function (room) {
+					location.replace('#' + room);
+					join(room);
+				});
+			}
+		})();
 	</script>
 </head>
 <body>
