@@ -15,10 +15,15 @@
 			};
 			// Init socketio
 			var socket = io.connect(location.protocol + "//" + location.hostname + ":" + (location.port || "80"));
+			var connection = null;
 			var userId = 'user-' + rand();
+			var api = {
+				heartbeat: function(heartbeat) {
+					console.log('heartbeat', heartbeat, 'at', Date.now());
+				},
+			};
 			skipRTCMultiConnectionLogs = true;
 			function join(room){
-				var connection = null;
 				socket.on('start song', function(data){ // client
 					$(function(){
 						var id = room + '-' + data.streamId
@@ -34,11 +39,15 @@
 								.addClass(e.extra.userId == data.src ? "master" : "slave")
 								.appendTo("#target");
 						};
+						connection.onCustomMessage = function(message) {
+							return api[message[0]].apply(this, message.slice(1));
+						}
 
 						if (isMaster) {
 							connection.session = {
 								audio: true,
 								video: data.video,
+								data: true,
 							};
 							connection.open();
 						} else {
@@ -68,6 +77,7 @@
 				});
 			}
 			$(function(){
+				var heartbeat = null;
 				[
 					function(){
 						socket.emit('start song', {streamId: 'sid-' + rand(), src: userId, video: true});
@@ -80,6 +90,17 @@
 					},
 					function(){
 						socket.emit('vote', {good: false, src: userId});
+					},
+					function(){ // move decl of heartbeat to nearest enclosing function
+						heartbeat = setInterval(function(){ // move to the video loop
+							connection.sendCustomMessage(['heartbeat', Date.now()]);
+						}, 1000);
+					},
+					function(){
+						if (heartbeat !== null) {
+							clearInterval(heartbeat);
+							heartbeat = null;
+						}
 					},
 				].map(function(f){
 					$("body")
