@@ -22,7 +22,7 @@ body{
 }*/
 
 .jumbotron{
-    /*background-image: url(../img/warty-final-ubuntu);*/
+    background-image: url(../img/bg.png);
     background-position: 50% 100%;
     background-size: cover;
     background-repeat: no-repeat;
