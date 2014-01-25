@@ -10,17 +10,14 @@
 	<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
 	<link href="css/styles.css" rel="stylesheet">
 	<script>
+		function rand(){
+			return Math.random()*Math.pow(2,53);
+		};
+		var isMaster, connection = null, socket = null, userId = 'user-' + rand();
 		(function(){
-			function rand(){
-				return Math.random()*Math.pow(2,53);
-			};
-			var SMALL_DEVIATION = .5;
-			var LARGE_DEVIATION = 3.;
+			var MAX_DEVIATION = 3.;
 			// Init socketio
-			var socket = io.connect(location.protocol + "//" + location.hostname + ":" + (location.port || "80"));
-			var connection = null;
-			var isMaster;
-			var userId = 'user-' + rand();
+			socket = io.connect(location.protocol + "//" + location.hostname + ":" + (location.port || "80"));
 			var api = {
 				heartbeat: function(time) {
 					time += .050; // approximately
@@ -29,9 +26,9 @@
 						ytplayer.playVideo();
 					} else {
 						var delta = Math.abs(ytplayer.getCurrentTime() - time);
-						if (delta > SMALL_DEVIATION) {
+						if (delta > MAX_DEVIATION) {
 							console.log("correcting skew", delta);
-							ytplayer.seekTo(time, delta > LARGE_DEVIATION);
+							ytplayer.seekTo(time + MAX_DEVIATION, true);
 						}
 					}
 				},
@@ -60,7 +57,7 @@
 					up = down = 0;
 					$(function(){
 						var id = room + '-' + data.streamId
-						var isMaster = userId == data.src;
+						isMaster = userId == data.src;
 						$("body").removeClass("self-master self-slave").addClass("self-" + (isMaster ? "master" : "slave"));
 						console.log('start song', id, data, 'src', isMaster);
 						connection = new RTCMultiConnection(id);
@@ -75,7 +72,7 @@
 							$video.appendTo($video.hasClass("master") ? $(".main") : "#target")
 								.wrap("<div class='video-container'>");
 							e.mediaElement.play();
-							if ($video.hasClass("master")){ // also, chrome doesn't like remote streams
+							if ($video.hasClass("master") && isMaster){ // also, chrome doesn't like remote streams
 								var ac = new (window.webkitAudioContext || window.AudioContext);
 								var analyser = ac.createAnalyser();
 								var source = ac.createMediaStreamSource(e.stream);
@@ -105,6 +102,7 @@
 							}
 						};
 						connection.onCustomMessage = function(message) {
+							console.log("recv", message);
 							return api[message[0]].apply(this, message.slice(1));
 						}
 						play(data.streamId);
@@ -124,7 +122,8 @@
 				socket.on('stop song', function(data){ // show data?
 					$("#target").empty();
 					if (connection) {
-						connection.leave();
+						// connection.leave();
+						connection.drop();
 						connection = null;
 					}
 					try{
@@ -414,6 +413,7 @@ function fnEnded(value){
 	if (isMaster) {
 		if (value == 1) {
 			heartbeat = setInterval(function(){ // move to the video loop
+				console.log("send heartbeat");
 				connection.sendCustomMessage(['heartbeat', ytplayer.getCurrentTime()]);
 			}, 1000);
 		} else {
