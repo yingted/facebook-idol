@@ -6,7 +6,6 @@ var app = require('http').createServer(handler)
 var mapping = {
   '/': '/index.html',
   '/io.js': '/node_modules/socket.io/node_modules/socket.io-client/lib/io.js',
-  '/webrtc.io.js': '/webrtc.io-client/lib/webrtc.io.js',
 };
 
 function handler (req, res) {
@@ -23,7 +22,6 @@ function handler (req, res) {
 }
 
 app.listen(8000);
-var webRTC = require('webrtc.io').listen(8001);
 function randomRoom(){
   do {
     for (var room = ''; room.length < 3;) // possibly increase that
