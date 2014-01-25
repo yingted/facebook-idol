@@ -5,6 +5,8 @@ var app = require('http').createServer(handler)
 
 var mapping = {
   '/': '/index.html',
+  '/css/styles.css': '/css/styles.css',
+  '/swfobject.js': '/swfobject.js',
 };
 
 function handler (req, res) {
