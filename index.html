@@ -234,10 +234,12 @@ SELECT uid,name,online_presence FROM user WHERE \n\
   console.log("sendUIDs", sendUIDs);
   console.log('');
 
-  var cn = document.getElementById('fmodal');
-  console.log("delete cn " + cn);
-  cn.parentNode.removeChild(cn);
-
+  removeModal();
+  function removeModal(){
+    var cn = document.getElementById('fmodal');
+    console.log("delete cn " + cn);
+    cn.parentNode.removeChild(cn);
+  }
   // Use FB.ui to send the Request(s)
   FB.ui({method: 'apprequests',
    to: sendUIDs,
@@ -266,6 +268,11 @@ SELECT uid,name,online_presence FROM user WHERE \n\
       FB.login(function(response) {
       renderMFS();
  }, {scope: 'publish_actions,user_friends,friends_online_presence,user_online_presence,basic_info,public_profile'});
+    });
+    $("#close-modal").bind('click', function(){
+      var cn = document.getElementById('fmodal');
+      console.log("delete cn " + cn);
+      cn.parentNode.removeChild(cn);
     });
 
     $("#startSong").bind('click', function(){
@@ -390,7 +397,9 @@ SELECT uid,name,online_presence FROM user WHERE \n\
 	</style>
   <div class = "breathingroom"></div>
   <div id = "fmodal">
+    
     <h1>Click to invite your online friends!</h1>
+    <button type="button" class="btn btn-default" id="close-modal" scope="publish_actions">X</button>
     <button type="button" class="btn btn-default" id="inviteFriends" scope="publish_actions">Invite Friends</button>
     <div class = "friendpick" id = "mfs"></div>
   </div>
