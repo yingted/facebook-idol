@@ -5,7 +5,6 @@
 	<title></title>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<script src="http://www.rtcmulticonnection.org/latest.js"></script>
-	<script src="/io.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
 		(function(){
@@ -13,7 +12,7 @@
 				return Math.random()*Math.pow(2,53);
 			};
 			// Init socketio
-			var socket = io.connect("http://localhost:8000");
+			var socket = io.connect(location.protocol + "//" + location.hostname + ":" + (location.port || "80"));
 			var userId = 'user-' + rand();
 			skipRTCMultiConnectionLogs = true;
 			function join(room){
