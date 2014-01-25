@@ -102,7 +102,6 @@
 							}
 						};
 						connection.onCustomMessage = function(message) {
-							console.log("recv", message);
 							return api[message[0]].apply(this, message.slice(1));
 						}
 						play(data.streamId);
@@ -413,7 +412,6 @@ function fnEnded(value){
 	if (isMaster) {
 		if (value == 1) {
 			heartbeat = setInterval(function(){ // move to the video loop
-				console.log("send heartbeat");
 				connection.sendCustomMessage(['heartbeat', ytplayer.getCurrentTime()]);
 			}, 1000);
 		} else {
@@ -549,7 +547,7 @@ function fnEnded(value){
       /* background-color: #4e4eff; */
       /*background-image:url('http://www.mobilemag.com/wp-content/uploads/2013/05/apple-wallpaper-logo.jpg');*/
       background-image:url('img/bg.jpg');
-      z-index: 3; 
+      z-index: 3;
     }
     .friendpick{
       width: 20%;
@@ -597,6 +595,9 @@ function fnEnded(value){
 		}
 		#mfs.prehidden{
 			visibility:hidden;
+		}
+		#myytplayer{
+			z-index:2;
 		}
 	</style>
   <div class = "breathingroom"></div>
