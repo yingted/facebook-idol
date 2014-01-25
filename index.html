@@ -380,12 +380,7 @@ function fnEnded(value){
     socket.emit('stop song');
   }
 }
-
-	// Init YT API
-	var params = { allowScriptAccess: "always" };
-	var atts = { id: "myytplayer" };
-	swfobject.embedSWF("http://www.youtube.com/v/WgG674C8390?enablejsapi=1&playerapiid=ytplayer&version=3","ytapiplayer", "425", "356", "8", null, null, params, atts);
-	</script>
+</script>
 </head>
 <body>
 	<div id="ytapiplayer" class="hidden">You need Flash player 8+ and JavaScript enabled to view this video.</div>
@@ -491,7 +486,20 @@ function fnEnded(value){
       height: 5%;
       z-index: 2;
     }
+    .offscreen{
+	    position:absolute;
+	    left:-99999px;
+	    top:-99999px;
+    }
 	</style>
+	<div class="offscreen">
+		<script>
+			// Init YT API
+			var params = { allowScriptAccess: "always" };
+			var atts = { id: "myytplayer" };
+			swfobject.embedSWF("http://www.youtube.com/v/WgG674C8390?enablejsapi=1&playerapiid=ytplayer&version=3","ytapiplayer", "425", "356", "8", null, null, params, atts);
+		</script>
+	</div>
   <div class = "breathingroom"></div>
   <div id = "fmodal">
     
