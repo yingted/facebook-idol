@@ -4,18 +4,40 @@
 	<meta charset="UTF-8">
 	<title></title>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="http://www.rtcmulticonnection.org/latest.js"></script>
 	<script src="/io.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script src="/webrtc.io.js"></script>
 	<script>
 		(function(){
+			function rand(){
+				return Math.random()*Math.pow(2,53);
+			};
 			var socket = io.connect("http://localhost:8000");
+			var userId = 'user-' + rand();
 			function join(room){
-				$(function(){
-					rtc.connect('ws://localhost:8001', room);
-					rtc.createStream('remote');
-					rtc.on('add remote stream', function(stream){
-						console.log('remote');
+				socket.on('start song', function(data){ // client
+					$(function(){
+						var id = room + '-' + data.streamId
+						var isMaster = userId == data.master;
+						console.log('start song', id, data, 'master', isMaster);
+						var connection = new RTCMultiConnection();
+						connection.disableDtlsSrtp = true;
+						connection.session = {
+							audio: isMaster,
+							video: false,
+							oneway: true,
+						};
+						connection.direction = 'one-to-many';
+
+						connection.onstream = function(e) {
+							$("#target").empty().append(e.mediaElement);
+						};
+
+						if (isMaster) {
+							connection.open(id);
+						} else
+							connection.connect(id);
 					});
 				});
 			}
@@ -30,10 +52,19 @@
 					join(room);
 				});
 			}
+			$(function(){
+				[
+					function(){
+						socket.emit('start song', {streamId: 'sid-' + rand(), master: userId});
+					},
+				].map(function(f){
+					$("<button>").text(f.toString()).click(f).appendTo($("body"));
+				});
+			});
 		})();
 	</script>
 </head>
 <body>
-	<audio id="remote" autoplay></audio>
+	<div id="target"></div>
 </body>
 </html>

@@ -36,9 +36,22 @@ io.sockets.on('connection', function (socket) {
   socket.on('new room', function (){
     var room = randomRoom();
     socket.emit('new room', room);
-    socket.join(room);
+    join(room);
   });
-  socket.on('join room', function (room) {
+  socket.on('join room', join);
+  function join (room) {
     socket.join(room);
-  });
+    var curSong = room + '-' + randomRoom(); // trash
+    function stop(){
+      console.log('client stopped', curSong);
+    }
+    socket.on('start song', function(data) {
+      curSong = room + '-' + data.streamId;
+      console.log('client started', curSong);
+      io.sockets.in(room).emit('start song', data);
+    });
+    socket.on('stop song', function(data) {
+      stop();
+    });
+  }
 });
