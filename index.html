@@ -114,6 +114,7 @@
 					try{
 						ytplayer.stopVideo();
 					}catch(e){}//may not be needed
+          $(".video-container:not(.player-container)").remove();
 				});
 			}
 			if(location.hash) {
