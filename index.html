@@ -9,6 +9,7 @@
 	<script src="/webrtc.io.js"></script>
 	<script>
 		(function(){
+			// Init socketio
 			var socket = io.connect("http://localhost:8000");
 			function join(room){
 				$(function(){
@@ -30,7 +31,26 @@
 					join(room);
 				});
 			}
+
+			// Init facebook API
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '725325364157893',
+          status     : true,
+          xfbml      : true
+        });
+      };
+
+      (function(d, s, id){
+         var js, fjs = d.getElementsByTagName(s)[0];
+         if (d.getElementById(id)) {return;}
+         js = d.createElement(s); js.id = id;
+         js.src = "//connect.facebook.net/en_US/all.js";
+         fjs.parentNode.insertBefore(js, fjs);
+       }(document, 'script', 'facebook-jssdk'));
+
 		})();
+
 	</script>
 </head>
 <body>
