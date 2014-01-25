@@ -39,7 +39,7 @@ body{
   overflow: scroll;
   height: 1000px;
   width: 600px;
-  background-color: red;
+  /*background-color: red;*/
 }
 
 #target video.me.master{
