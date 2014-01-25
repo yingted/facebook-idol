@@ -1,77 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Facebook Idol</title>
-  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-  <script src="http://www.rtcmulticonnection.org/latest.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
-  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
-  <link href="css/styles.css" rel="stylesheet">
-  <script>
-  var socket = io.connect(location.protocol + "//" + location.hostname + ":" + (location.port || "80")); // moved this
-    // (function(){
-      function rand(){
-        return Math.random()*Math.pow(2,53);
-      };
-      // Init socketio
-      // var socket used to be here
-      var userId = 'user-' + rand();
-      skipRTCMultiConnectionLogs = true;
-      function join(room){
-        var connection = null;
-        socket.on('start song', function(data){ // client
-          $(function(){
-            var id = room + '-' + data.streamId
-            var isMaster = userId == data.src;
-            console.log('start song', id, data, 'src', isMaster);
-            connection = new RTCMultiConnection(id);
-            connection.disableDtlsSrtp = true;
-            connection.autoCloseEntireSession = true;
-            connection.extra = {userId: userId};
-            connection.onstream = function(e) {
-              console.log('stream added', e);
-              $(e.mediaElement)
-                .addClass(e.extra.userId == userId ? "me" : "you")
-                .addClass(e.extra.userId == data.src ? "master" : "slave")
-                .appendTo("#target");
-            };
+	<meta charset="UTF-8">
+	<title>Facebook Idol</title>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="http://www.rtcmulticonnection.org/latest.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<link href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/styles.css" rel="stylesheet">
+	<script>
+		// (function(){
+			function rand(){
+				return Math.random()*Math.pow(2,53);
+			};
+			// Init socketio
+			var socket = io.connect(location.protocol + "//" + location.hostname + ":" + (location.port || "80"));
+			var connection = null;
+			var userId = 'user-' + rand();
+			var api = {
+				heartbeat: function(heartbeat) {
+					console.log('heartbeat', heartbeat, 'at', Date.now());
+				},
+			};
+			skipRTCMultiConnectionLogs = true;
+			function join(room){
+				socket.on('start song', function(data){ // client
+					$(function(){
+						var id = room + '-' + data.streamId
+						var isMaster = userId == data.src;
+						console.log('start song', id, data, 'src', isMaster);
+						connection = new RTCMultiConnection(id);
+						connection.autoCloseEntireSession = true;
+						connection.extra = {userId: userId};
+						connection.onstream = function(e) {
+							console.log('stream added', e);
+							$(e.mediaElement)
+								.addClass(e.extra.userId == userId ? "me" : "you")
+								.addClass(e.extra.userId == data.src ? "master" : "slave")
+								.appendTo("#target");
+						};
+						connection.onCustomMessage = function(message) {
+							return api[message[0]].apply(this, message.slice(1));
+						}
 
-            if (isMaster) {
-              connection.session = {
-                audio: true,
-                video: data.video,
-              };
-              connection.open();
-            } else {
-              console.log('client connecting');
-              var sessions = { };
-              connection.connect();
-            }
-          });
-        });
-        socket.on('stop song', function(data){ // show data?
-          $("#target").empty();
-          if (connection) {
-            connection.leave();
-            connection = null;
-          }
-        });
-      }
-      if(location.hash) {
-        var room = location.hash.substring(1);
-        socket.emit('join room', room);
-        join(room);
-      } else {
-        socket.emit('new room');
-        socket.on('new room', function (room) {
-          location.replace('#' + room);
-          join(room);
-        });
-      }
-      
-    //})();
-
+						if (isMaster) {
+							connection.session = {
+								audio: true,
+								video: data.video,
+								data: true,
+							};
+							connection.open();
+						} else {
+							console.log('client connecting');
+							var sessions = { };
+							connection.connect();
+						}
+					});
+				});
+				socket.on('stop song', function(data){ // show data?
+					$("#target").empty();
+					if (connection) {
+						connection.leave();
+						connection = null;
+					}
+				});
+			}
+			if(location.hash) {
+				var room = location.hash.substring(1);
+				socket.emit('join room', room);
+				join(room);
+			} else {
+				socket.emit('new room');
+				socket.on('new room', function (room) {
+					location.replace('#' + room);
+					join(room);
+				});
+			}
+			// $(function(){
+			// 	var heartbeat = null;
+			// 	[
+			// 		function(){
+			// 			socket.emit('start song', {streamId: 'sid-' + rand(), src: userId, video: true});
+			// 		},
+			// 		function(){
+			// 			socket.emit('start song', {streamId: 'sid-' + rand(), src: userId, video: false});
+			// 		},
+			// 		function(){
+			// 			socket.emit('vote', {good: true, src: userId});
+			// 		},
+			// 		function(){
+			// 			socket.emit('vote', {good: false, src: userId});
+			// 		},
+			// 		function(){ // move decl of heartbeat to nearest enclosing function
+			// 			heartbeat = setInterval(function(){ // move to the video loop
+			// 				connection.sendCustomMessage(['heartbeat', Date.now()]);
+			// 			}, 1000);
+			// 		},
+			// 		function(){
+			// 			if (heartbeat !== null) {
+			// 				clearInterval(heartbeat);
+			// 				heartbeat = null;
+			// 			}
+			// 		},
+			// 	].map(function(f){
+			// 		$("body")
+			// 			.append($("<button>").text(f.toString()).click(f))
+			// 			.append("<br>");
+			// 	});
+			// });
+			
+		// })();
   window.fbAsyncInit = function() {
   FB.init({
     appId      : '201019110094783',
@@ -160,7 +198,7 @@
    mfsForm.id = 'mfsForm';
 
    // Iterate through the array of friends object and create a checkbox for each one.
-   for(var i = 0; i < Math.min(response.data.length, 1000); i++) { // only goes up to 1000 friends
+   for(var i = 0; i < Math.min(response.data.length, 1000); i++) {
      var friendItem = document.createElement('div');
      friendItem.id = 'friend_' + response.data[i].id;
      friendItem.innerHTML = '<input type="checkbox" name="friends" value="'
@@ -233,7 +271,8 @@
       socket.emit('vote', {good: false, src: userId});
     });
   });
-  </script>
+
+	</script>
 </head>
 <body>
 <div class = "container">
