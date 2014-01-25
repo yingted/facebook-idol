@@ -7,6 +7,7 @@ var mapping = {
   '/': '/index.html',
   '/css/styles.css': '/css/styles.css',
   '/swfobject.js': '/swfobject.js',
+  '/img/bg.png': '/img/bg.png',
 };
 
 function handler (req, res) {

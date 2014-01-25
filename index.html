@@ -419,14 +419,18 @@ function fnEnded(value){
 			height:100%;
 			background-color:grey;
 			color:white;
-			font-size:1.2em;
+			font-size:1.3em;
 			overflow:hidden;
 		}
 		.sidebar-container{
-			width:23em;
-			height:100%;
-			float:right;
-			padding:2em;
+			position:fixed;
+			top:50px;
+			left:990px;
+			/*width:4em;
+			height:4em;
+			float:right;*/
+			padding:0em;
+			
 		}
 		.main-container{
 			height:100%;
@@ -436,16 +440,21 @@ function fnEnded(value){
 			padding-bottom:11em;
 		}
 		.sidebar{
-			width:100%;
-			height:100%;
-			background-color:purple;
-			border-radius:2em;
-			padding:1em;
+			position:fixed;
+			top:50px;
+			left:900px;
+			
+			/*width:900px;
+			height:500px;*/
+			background-color:#a77;
+			/*border-radius:2em;
+			padding:1em;*/
+			font-size:0.4em;
 		}
-		.main{
+		.main{ /* main.login, main.container -- Change color lol*/
 			width:100%;
 			height:100%;
-			background-color:#505;
+			background-color:#171e22;
 			border-radius:2em;
 			padding:1em;
 			position:relative;
@@ -483,7 +492,7 @@ function fnEnded(value){
 			margin:0 1em;
 			height:100%;
 			margin:0 auto;
-			background-color:#505;
+			background-color:#171e22;
 			border-radius:2em;
 			padding:1em;
 			display:inline-block;
@@ -495,6 +504,21 @@ function fnEnded(value){
 		video.slave{
 			height:100%;
 		}
+	#search-results>div{
+	    border-top:1px solid pink;
+	    position:relative;
+	    min-height:92px;
+	    padding-left:120px;
+	    font-size:14pt;
+	    text-overflow: ellipsis;
+	}
+	#search-results>div img{
+	    float:left;
+	    position:absolute;
+	    top:0;
+	    left:0;
+	    display:inline-block;
+	}
     #fmodal{ /* hard coded positions in em... yummm..... */
 
       width:100%;
