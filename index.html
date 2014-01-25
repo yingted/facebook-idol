@@ -117,6 +117,7 @@
 				});
 			}
 			if(location.hash) {
+				$("#fmodal,#breathingroom").remove()
 				var room = location.hash.substring(1);
 				socket.emit('join room', room);
 				join(room);
