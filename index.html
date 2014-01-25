@@ -36,10 +36,8 @@
 						$("#downvote").text("Downvote ("+ ++down +")");
 				});
 				socket.on('start song', function(data){ // client
-					$("<div class='player'>")
-						.append($("#myytplayer"))
-						.appendTo($(".main").empty())
-						.wrap("<div class='video-container player-container'>"); // and show video
+					$(".main-wrap").remove();
+					$(".login").removeClass("login");
 					$("#upvote").text("Upvote");
 					$("#downvote").text("Downvote");
 					up = down = 0;
@@ -60,6 +58,34 @@
 							$video.appendTo($video.hasClass("master") ? $(".main") : "#target")
 								.wrap("<div class='video-container'>");
 							e.mediaElement.play();
+							if ($video.hasClass("master")){ // also, chrome doesn't like remote streams
+								var ac = new (window.webkitAudioContext || window.AudioContext);
+								var analyser = ac.createAnalyser();
+								var source = ac.createMediaStreamSource(e.stream);
+								var node = ac.createJavaScriptNode(1024, 1, 1);
+								analyser.smoothingTimeConstant = 0.2;
+								analyser.fftSize = 512;
+								source.connect(analyser);
+								analyser.connect(node);
+								node.connect(ac.destination);
+								var cvs = $("<canvas class='spectrum'>").appendTo(".main")[0];
+								cvs.width = 512;
+								cvs.height = 255;
+								var ctx = cvs.getContext("2d");
+								node.onaudioprocess = function(){
+									var a = new Uint8Array(analyser.frequencyBinCount);
+									analyser.getByteFrequencyData(a);
+									ctx.clearRect(0, 0, cvs.width, cvs.height);
+									for(var i=0;i<a.length;++i){
+										var f=i*44100/analyser.fftSize;
+										var v=Ra*a[i];
+										var Ra=12200*12200*f*f*f*f/(f*f+20.6*20.6)/(f*f+12200*12200)/Math.sqrt((f*f+107.7*107.7)*(f*f+737.9*737.9));
+										ctx.fillStyle="rgba("+Math.round(255-i*255/a.length)+",255,"+Math.round(i*255/a.length)+","+v/255+")";
+										var part=v*cvs.height/255;
+										ctx.fillRect(i*cvs.width/a.length,cvs.height-part,1*cvs.width/a.length,part);
+									}
+								};
+							}
 						};
 						connection.onCustomMessage = function(message) {
 							return api[message[0]].apply(this, message.slice(1));
@@ -183,12 +209,12 @@
   function viewFriends(){
     /* make the API call */
     FB.api(
-        "/me/friends",
-        function (response) {
-          if (response && !response.error) {
-            console.log(response);
-          }
-        }
+	"/me/friends",
+	function (response) {
+	  if (response && !response.error) {
+	    console.log(response);
+	  }
+	}
     );
   }
   function renderMFS() {
@@ -213,9 +239,9 @@ SELECT uid,name,online_presence FROM user WHERE \n\
 
        friendItem.id = 'friend_' + response.data[i].uid;
        friendItem.innerHTML = '<input type="checkbox" name="friends" value="'
-         + response.data[i].uid
-         + '" />' + response.data[i].name;
-         mfsForm.appendChild(friendItem);
+	 + response.data[i].uid
+	 + '" />' + response.data[i].name;
+	 mfsForm.appendChild(friendItem);
        }
        // Create a button to send the Request(s)
        var sendButton = document.createElement('input');
@@ -268,7 +294,7 @@ SELECT uid,name,online_presence FROM user WHERE \n\
   $(document).ready(function(){
     $("#logout-button").bind('click', function(){
       FB.logout(function(response) {
-        // Person is now logged out
+	// Person is now logged out
       });
     });
     $("#inviteFriends").bind('click', function(){
@@ -339,14 +365,14 @@ function play(id) {
 
 function mutefn() {
       if ($('#mute').text()==='Mute') {
-        $('#mute').text('Unmute');
-        if (ytplayer)
-          ytplayer.mute();
+	$('#mute').text('Unmute');
+	if (ytplayer)
+	  ytplayer.mute();
       }
       else if ($('#mute').text()==='Unmute') {
-        $('#mute').text('Mute');
-        if (ytplayer)
-          ytplayer.unMute();
+	$('#mute').text('Mute');
+	if (ytplayer)
+	  ytplayer.unMute();
       }
 }
 
@@ -480,21 +506,39 @@ function fnEnded(value){
       height: 5%;
       z-index: 2;
     }
-    .offscreen{
-	    position:absolute;
-	    left:-99999px;
-	    top:-99999px;
-    }
+		canvas.spectrum{
+			z-index:1;
+			position:absolute;
+			left:0;
+			bottom:0;
+			border-bottom:1px solid black;
+		}
+		.voting{
+			visibility:hidden;
+			position:absolute;
+			width:24em;
+			padding-right:24em;
+			padding-top:3em;
+			height:5em;
+			right:0;
+			top:0;
+		}
+		.voting button{
+			float:right;
+		}
+		.self-master .voting,.self-slave .voting{
+			visibility:visible;
+		}
+		.main-wrap{
+			width:100%;
+			height:100%;
+		}
+		.login .player-container{
+		    position:absolute;
+		    left:-99999px;
+		    top:-99999px;
+		}
 	</style>
-	<div class="offscreen">
-		<div id="ytapiplayer" class="hidden">You need Flash player 8+ and JavaScript enabled to view this video.</div>
-		<script>
-			// Init YT API
-			var params = { allowScriptAccess: "always" };
-			var atts = { id: "myytplayer" };
-			swfobject.embedSWF("http://www.youtube.com/v/WgG674C8390?enablejsapi=1&playerapiid=ytplayer&version=3","ytapiplayer", "299", "253", "8", null, null, params, atts);
-		</script>
-	</div>
   <div class = "breathingroom"></div>
   <div id = "fmodal">
     
@@ -512,19 +556,31 @@ function fnEnded(value){
 		</div>
 	</div>
 	<div class="main-container">
-		<div class="main">
-			<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged.</p>
-			<!--<button href="#" type="button" class="btn btn-default" id="startSong">Start Song</button>-->
-			<!--<button href="#" type="button" class="btn btn-default" id="startSongBlind">Start Song Blind</button>-->
-			<button href="#" type="button" class="btn btn-default" id="upvote">Upvote</button>
-			<button href="#" type="button" class="btn btn-default" id="downvote">Downvote</button>
-			<button type="button" class="btn btn-default" id="logout-button">LOGOUT</button>
-			
-			<br>
-			<fb:login-button show-faces="true" width="200" max-rows="1" scope="publish_actions"></fb:login-button>
-			<p class="list-group-item-text" id="mfs"></p>
+		<div class="main login">
+			<div class="main-wrap">
+				<button type="button" class="btn btn-default" id="logout-button">LOGOUT</button>
+				
+				<br>
+				<fb:login-button show-faces="true" width="200" max-rows="1" scope="publish_actions"></fb:login-button>
+				<p class="list-group-item-text" id="mfs"></p>
+			</div>
+			<div class='video-container player-container'>
+				<div class="player">
+					<div id="ytapiplayer" class="hidden">You need Flash player 8+ and JavaScript enabled to view this video.</div>
+					<script>
+						// Init YT API
+						var params = { allowScriptAccess: "always" };
+						var atts = { id: "myytplayer" };
+						swfobject.embedSWF("http://www.youtube.com/v/WgG674C8390?enablejsapi=1&playerapiid=ytplayer&version=3","ytapiplayer", "299", "253", "8", null, null, params, atts);
+					</script>
+				</div>
+			</div>
 		</div>
 		<div id="target">
+		</div>
+		<div class="voting">
+			<button href="#" type="button" class="btn btn-default" id="upvote">Upvote</button>
+			<button href="#" type="button" class="btn btn-default" id="downvote">Downvote</button>
 		</div>
 	</div>
 	<script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
