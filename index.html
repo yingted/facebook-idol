@@ -23,7 +23,6 @@
 						var isMaster = userId == data.src;
 						console.log('start song', id, data, 'src', isMaster);
 						connection = new RTCMultiConnection(id);
-						connection.disableDtlsSrtp = true;
 						connection.autoCloseEntireSession = true;
 						connection.extra = {userId: userId};
 						connection.onstream = function(e) {
