@@ -283,6 +283,7 @@ SELECT uid,name,online_presence FROM user WHERE \n\
       var cn = document.getElementById('fmodal');
       console.log("delete cn " + cn);
       cn.parentNode.removeChild(cn);
+      $(".breathingroom").remove();
     });
 
     $("#startSong").bind('click', function(){
