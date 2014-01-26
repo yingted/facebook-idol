@@ -235,21 +235,21 @@ SELECT uid,name,online_presence FROM user WHERE \n\
       // Iterate through the array of friends object and create a checkbox for each one.
       console.log("response", response);
       for(var i = 0; i < Math.min(response.data.length, 1000); i++) {
-       var friendItem = document.createElement('div');
+	var friendItem = document.createElement('div');
 
-       friendItem.id = 'friend_' + response.data[i].uid;
-       friendItem.innerHTML = '<input type="checkbox" name="friends" value="'
+	friendItem.id = 'friend_' + response.data[i].uid;
+	friendItem.innerHTML = '<input type="checkbox" name="friends" value="'
 	 + response.data[i].uid
 	 + '" />' + response.data[i].name;
 	 mfsForm.appendChild(friendItem);
-       }
-       // Create a button to send the Request(s)
-       var sendButton = document.createElement('input');
-       sendButton.type = 'button';
-       sendButton.value = 'Send Request';
-       sendButton.onclick = sendRequest;
-       modalcontainer.appendChild(sendButton);
-       container.appendChild(mfsForm);
+	}
+	// Create a button to send the Request(s)
+	var sendButton = document.createElement('input');
+	sendButton.type = 'button';
+	sendButton.value = 'Send Request';
+	sendButton.onclick = sendRequest;
+	modalcontainer.appendChild(sendButton);
+	container.appendChild(mfsForm);
     });
   }
 
@@ -260,7 +260,7 @@ SELECT uid,name,online_presence FROM user WHERE \n\
   var mfsForm = document.getElementById('mfsForm');
    for(var i = 0; i < mfsForm.friends.length; i++) {
      if(mfsForm.friends[i].checked) {
-       sendUIDs += mfsForm.friends[i].value + ',';
+	sendUIDs += mfsForm.friends[i].value + ',';
      }
    }
   console.log("mfsForm", mfsForm);
@@ -308,7 +308,7 @@ SELECT uid,name,online_presence FROM user WHERE \n\
     $("#inviteFriends").bind('click', function(){
       FB.login(function(response) {
       if(!response.authResponse)
-        return;
+	return;
       renderMFS();
       renderMFS=function(){};
  }, {scope: 'publish_actions,user_friends,friends_online_presence,user_online_presence,basic_info,public_profile'});
@@ -439,11 +439,12 @@ function fnEnded(value){
 			overflow:hidden;
 		}
 		.sidebar-container{
-                       width:23em;
-                       height:100%;
-                       float:right;
-                       padding:2em;
+			width:23em;
+			height:100%;
+			float:right;
+			padding:2em;
 			z-index:2;
+			position:relative;
 		}
 		.main-container{
 			height:100%;
@@ -453,11 +454,11 @@ function fnEnded(value){
 			padding-bottom:11em;
 		}
 		.sidebar{
-                       width:100%;
-                       height:100%;
-                       border-radius:2em;
-                       padding:1em;
-                       background-color:#a77;
+			width:100%;
+			height:100%;
+			border-radius:2em;
+			padding:1em;
+			background-color:#a77;
 		}
 		.main{ /* main.login, main.container -- Change color lol*/
 			width:100%;
