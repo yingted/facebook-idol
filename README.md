@@ -2,6 +2,7 @@ Facebook  Idol
 ==============
 To view received requests, go to
 > http://www.facebook.com/appcenter/requests
+
 Joining a room: Share the URL with your friends
 Starting a karaoke session: Search and click a video (ends current session)
 Features:
